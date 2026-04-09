@@ -26,7 +26,7 @@ def post_process_mesh(mesh, cluster_to_keep=1000, min_cluster_size=50):
     to the number of available clusters.
     """
 
-    print("post processing the mesh to have {} clusterscluster_to_kep".format(cluster_to_keep))
+    print("post processing the mesh to keep up to {} largest clusters".format(cluster_to_keep))
 
     mesh_0 = copy.deepcopy(mesh)
 
@@ -37,7 +37,8 @@ def post_process_mesh(mesh, cluster_to_keep=1000, min_cluster_size=50):
     cluster_n_triangles = np.asarray(cluster_n_triangles)
     cluster_area = np.asarray(cluster_area)
 
-    num_clusters = len(triangle_clusters)
+    # cluster_n_triangles has one entry per connected component; triangle_clusters is per-triangle.
+    num_clusters = len(cluster_n_triangles)
     
     # Nothing to do if there are no clusters / no triangles
     if num_clusters == 0:

@@ -12,34 +12,54 @@
 import torch
 import numpy as np
 import os
-import math
+import copy
 from tqdm import tqdm
 from utils.render_utils import save_img_f32, save_img_u8
 from functools import partial
 import open3d as o3d
-import trimesh
 
-def post_process_mesh(mesh, cluster_to_keep=1000):
+def post_process_mesh(mesh, cluster_to_keep=1000, min_cluster_size=50):
     """
     Post-process a mesh to filter out floaters and disconnected parts
+
+    Keeps the N largest connected triangle clusters, where N is clamped
+    to the number of available clusters.
     """
-    import copy
-    print("post processing the mesh to have {} clusterscluster_to_kep".format(cluster_to_keep))
+
+    print("post processing the mesh to keep up to {} largest clusters".format(cluster_to_keep))
+
     mesh_0 = copy.deepcopy(mesh)
+
     with o3d.utility.VerbosityContextManager(o3d.utility.VerbosityLevel.Debug) as cm:
             triangle_clusters, cluster_n_triangles, cluster_area = (mesh_0.cluster_connected_triangles())
 
     triangle_clusters = np.asarray(triangle_clusters)
     cluster_n_triangles = np.asarray(cluster_n_triangles)
     cluster_area = np.asarray(cluster_area)
-    n_cluster = np.sort(cluster_n_triangles.copy())[-cluster_to_keep]
-    n_cluster = max(n_cluster, 50) # filter meshes smaller than 50
+
+    # cluster_n_triangles has one entry per connected component; triangle_clusters is per-triangle.
+    num_clusters = len(cluster_n_triangles)
+    
+    # Nothing to do if there are no clusters / no triangles
+    if num_clusters == 0:
+        print("No clusters found; returning mesh unchanged.")
+        return mesh_0
+
+    # Clamp the number of clusters to a valid range
+    clusters_to_keep = max(1, min(int(cluster_to_keep), num_clusters))
+
+    # Threshold = size of the N-th largest cluster
+    n_cluster = np.sort(cluster_n_triangles.copy())[-clusters_to_keep]
+    n_cluster = max(n_cluster, min_cluster_size) # filter meshes smaller than min_cluster_size
+
     triangles_to_remove = cluster_n_triangles[triangle_clusters] < n_cluster
     mesh_0.remove_triangles_by_mask(triangles_to_remove)
     mesh_0.remove_unreferenced_vertices()
     mesh_0.remove_degenerate_triangles()
+
     print("num vertices raw {}".format(len(mesh.vertices)))
     print("num vertices post {}".format(len(mesh_0.vertices)))
+    
     return mesh_0
 
 def to_cam_open3d(viewpoint_stack):

@@ -3,7 +3,6 @@
 Este fork documenta la instalación y puesta en funcionamiento de 2D Gaussian Splatting (Huang et al., SIGGRAPH 2024) como base para la implementación del curso de Proyecto Final de Carrera I, que posteriormente integrará las técnicas de NPGS (Enhancing Sparse-View 3DGS with Guidance of Normals Priors and Dense Point Initialization): normales estimadas con Metric3D v2 y nube de puntos densa generada con RoMa.
 
 Repositorio original: https://github.com/hbb1/2d-gaussian-splatting
-(conservado en README_original.md)
 
 ## Hardware y software de referencia
 
@@ -19,7 +18,7 @@ Repositorio original: https://github.com/hbb1/2d-gaussian-splatting
 ### 1. Submódulos
 git submodule update --init --recursive
 
-### 2. Entorno virtual (venv nativo, no conda)
+### 2. Entorno virtual (venv nativo)
 sudo apt install python3.12-venv python3.12-dev -y
 python3 -m venv venv
 source venv/bin/activate
@@ -34,7 +33,7 @@ El environment.yml original esta desactualizado (pensado para CUDA 11.6 / PyTorc
 pip install plyfile tqdm opencv-python trimesh matplotlib mediapy
 pip install "open3d==0.19.0"   # ver nota de bug mas abajo, NO usar 0.20.0
 
-### 5. Compilacion de submodulos CUDA
+### 5. Compilación de submódulos CUDA
 export TORCH_CUDA_ARCH_LIST="8.9"
 pip install --no-build-isolation submodules/diff-surfel-rasterization
 pip install --no-build-isolation submodules/simple-knn
@@ -42,9 +41,9 @@ pip install --no-build-isolation submodules/simple-knn
 ## Problemas encontrados y soluciones
 
 - Error "namespace std has no member uintptr_t" al compilar diff-surfel-rasterization: falta #include <cstdint> en cuda_rasterizer/rasterizer_impl.h (compiladores nuevos con CUDA 13 ya no lo incluyen implícitamente). Solución: agregar ese include al inicio del archivo.
-- Error "fatal error: Python.h: No existe el archivo o el directorio": falta el paquete de cabeceras de desarrollo de Python. Solucion: sudo apt install python3.12-dev
+- Error "fatal error: Python.h: No existe el archivo o el directorio": falta el paquete de cabeceras de desarrollo de Python. Solución: sudo apt install python3.12-dev
 - Error "ModuleNotFoundError: No module named torch" al compilar submódulos: pip usa un entorno de build aislado que no ve el venv activo. Solución: usar pip install --no-build-isolation
-- Malla extraida con 0 vertices en render.py pese a mapas de profundidad válidos: bug de compatibilidad del pipeline legacy ScalableTSDFVolume con Open3D 0.20.0. Solucion: usar open3d==0.19.0 (la 0.18.0 no tiene wheel para Python 3.12)
+- Malla extraída con 0 vértices en render.py pese a mapas de profundidad válidos: bug de compatibilidad del pipeline legacy ScalableTSDFVolume con Open3D 0.20.0. Solución: usar open3d==0.19.0 (la 0.18.0 no tiene wheel para Python 3.12)
 
 ## Flujo de entrenamiento (validado con DTU scan24)
 
@@ -54,10 +53,10 @@ python train.py -s <ruta_dataset>/scan24 -m <ruta_output>/scan24 -r 2 --depth_ra
 
 python render.py -m <ruta_output>/scan24 -s <ruta_dataset>/scan24 -r 2 --depth_ratio 1 --skip_test --skip_train
 
-Resultado de referencia (scan24, 30k iteraciones, ~29 min en RTX 4060 8GB): PSNR train 36.1, malla extraida (fuse_post.ply) con 305678 vertices y 10569 clusters.
+Resultado de referencia (scan24, 30k iteraciones, ~29 min en RTX 4060 8GB): PSNR train 36.1, malla extraida (fuse_post.ply) con 305678 vértices y 10569 clusters.
 
 ## Próximos pasos
 
 - Integrar Metric3D v2 para generar normales como prior
-- Integrar RoMa para inicializacion densa de puntos (DFTri)
+- Integrar RoMa para inicialización densa de puntos (DFTri)
 - Modificar train.py para incorporar Lsnorm y Ldnorm

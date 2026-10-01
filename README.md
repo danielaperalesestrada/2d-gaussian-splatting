@@ -31,7 +31,7 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 El environment.yml original esta desactualizado (pensado para CUDA 11.6 / PyTorch 1.12, incompatible con GPUs Ada). Dependencias reales instaladas via pip, congeladas en requirements-instalacion.txt:
 
 pip install plyfile tqdm opencv-python trimesh matplotlib mediapy
-pip install "open3d==0.19.0"   # ver nota de bug mas abajo, NO usar 0.20.0
+pip install "open3d==0.19.0"   # ver nota de bug más abajo, NO usar 0.20.0
 
 ### 5. Compilación de submódulos CUDA
 export TORCH_CUDA_ARCH_LIST="8.9"
@@ -53,10 +53,9 @@ python train.py -s <ruta_dataset>/scan24 -m <ruta_output>/scan24 -r 2 --depth_ra
 
 python render.py -m <ruta_output>/scan24 -s <ruta_dataset>/scan24 -r 2 --depth_ratio 1 --skip_test --skip_train
 
-Resultado de referencia (scan24, 30k iteraciones, ~29 min en RTX 4060 8GB): PSNR train 36.1, malla extraida (fuse_post.ply) con 305678 vértices y 10569 clusters.
+Resultado de referencia (scan24, 30k iteraciones, ~29 min en RTX 4060 8GB): PSNR train 36.1, malla extraída (fuse_post.ply) con 305678 vértices y 10569 clusters.
 
 ## Próximos pasos
 
 - Integrar Metric3D v2 para generar normales como prior
 - Integrar RoMa para inicialización densa de puntos (DFTri)
-- Modificar train.py para incorporar Lsnorm y Ldnorm
